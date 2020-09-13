@@ -31,11 +31,6 @@
 #define X_WIDTH 128 // x轴宽度
 #define Y_HEIGHT 64 // y轴高度
 
-#if IS_GLOBAL_REFRESH == 1
-// OLED12864点阵图像
-uint8_t image_array[128][64];
-#endif
-
 // 大小为6*8的字符
 const unsigned char ascii_6x8[][6] =
     {
@@ -273,9 +268,21 @@ void OLED_DrawPoint(OLED_Point point)
 
 void OLED_DrawCharacter(char character, OLED_Point start_point, FontSize font_size)
 {
+    uint8_t charater_index, col_index;
     switch (font_size)
     {
     case small:
+        charater_index = character - 32;
+        if (start_point.x > 126)
+        {
+            start_point.x = 0;
+            start_point.y++;
+        }
+        OLED_Set_Pointer(start_point.x, start_point.y);
+        for (col_index = 0; col_index < 6; col_index++)
+        {
+            OLED_Write_Data(ascii_6x8[charater_index][col_index]);
+        }
         break;
     case big:
         break;

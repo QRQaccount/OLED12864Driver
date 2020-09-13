@@ -15,9 +15,6 @@
 #define OLED_SPI_Mode 1 //SPI通信方式
 #define OLED_IIC_Mode 0 //IIC通信方式
 
-// 是否启用全局刷新
-#define IS_GLOBAL_REFRESH 0
-
 // 用于设置与OLED12864的连接方式,支持SPI与IIC两种方式
 #define CONNECTION_MODE OLED_SPI_Mode
 
