@@ -1,5 +1,4 @@
 .vscode
-.cproject
-.mxproject
-.project
-STM32F103ZETx_FLASH.ld
+.settings
+*.launch
+Debug

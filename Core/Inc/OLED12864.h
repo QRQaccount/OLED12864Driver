@@ -1,12 +1,12 @@
 #ifndef _OLED12864_H
 #define _OLED12864_H
 
-#include "stm32f1xx_hal.h"
+#include "stm32f4xx_hal.h"
 
 #define OLED_CLK_Port GPIOA          // 时钟信号端口组
 #define OLED_CLK_GPIO_Pin GPIO_PIN_4 // 时钟信号端口号
-#define OLED_DI_Port GPIOA           // SPI:MISO端口组 IIC:
-#define OLED_DI_GPIO_Pin GPIO_PIN_5  // SPI:MISO端口号 IIC:
+#define OLED_DI_Port GPIOA           // SPI:MISO IIC:SDA
+#define OLED_DI_GPIO_Pin GPIO_PIN_5  // SPI:MISO IIC:SDA
 #define OLED_RST_Port GPIOA          // 重置信号端口组
 #define OLED_RST_GPIO_Pin GPIO_PIN_6 // 重置信号端口号
 #define OLED_DC_Port GPIOA           // 指令/数据端口组
@@ -18,15 +18,8 @@
 // 用于设置与OLED12864的连接方式,支持SPI与IIC两种方式
 #define CONNECTION_MODE OLED_SPI_Mode
 
-// 初始化需要使用的GPIO口
-
-// 常用形状
-typedef enum OLED_Shap
-{
-    Square,   // 正方形
-    Triangle, // 等边三角形
-    Circular  //圆形
-} OLED_Shap;
+// 是否在内存中开辟一块空间用于管理显示的图像 提供更细致的图形绘制
+#define USE_IMAGE_MANAGE 1
 
 // 用于记录点的位置和值.令左上角为(0,0)
 typedef struct
@@ -41,6 +34,46 @@ typedef struct
  * 
 */
 void OLED_Init(void);
+
+// 字体大小
+typedef enum
+{
+    small,
+    big
+} FontSize;
+
+/**
+ * 
+ * 将数据填充到整个屏幕
+*/
+void OLED_Fill(unsigned char data);
+
+/**
+ * 
+ * 输出指定字体大小的ASCII字符
+ * @param character 需要输入的字符
+ * @param start_point 字符的位置 沿y轴方向从0开始每8像素点作为一行
+ * @param font_size 字体大小
+*/
+void OLED_DrawCharacter(unsigned char character, OLED_Point start_point, FontSize font_size);
+
+/**
+ * 
+ * 输出指定字体大小的ASCII字符串
+ * @param str 字符串
+ * @param start_point 字符的位置 沿y轴方向从0开始每8像素点作为一行
+ * @param font_size 字体大小
+*/
+void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize font_size);
+
+#if USE_IMAGE_MANAGE == 1
+// 常用形状
+typedef enum OLED_Shap
+{
+    Square,   // 正方形
+    Triangle, // 等边三角形
+    Circular  //圆形
+} OLED_Shap;
 
 /**
  * 
@@ -68,41 +101,11 @@ void OLED_DrawArray(OLED_Point *array_pointer, uint16_t length);
 
 /**
  * 
- * 将数据填充到整个屏幕
-*/
-void OLED_Fill(unsigned char data);
-
-/**
- * 
  * 绘制一条线段
  * @param point1 第一个点的坐标
  * @param point2 第二个点的坐标
 */
 void OLED_DrawLine(OLED_Point point1, OLED_Point point2);
-
-// 字体大小
-typedef enum
-{
-    small,
-    big
-} FontSize;
-
-/**
- * 
- * 输出指定字体大小的ASCII字符
- * @param character 需要输入的字符
- * @param start_point 字符的位置
- * @param font_size 字体大小
-*/
-void OLED_DrawCharacter(char character, OLED_Point start_point, FontSize font_size);
-
-/**
- * 
- * 输出指定字体大小的ASCII字符串
- * @param str 字符串
- * @param start_point 字符的位置
- * @param font_size 字体大小
-*/
-void OLED_DrawString(const char str[], OLED_Point start_point, FontSize font_size);
+#endif
 
 #endif
