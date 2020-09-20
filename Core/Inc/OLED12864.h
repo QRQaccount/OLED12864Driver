@@ -64,7 +64,17 @@ void OLED_DrawCharacter(unsigned char character, OLED_Point start_point, FontSiz
  * @param start_point 字符的位置 沿y轴方向从0开始每8像素点作为一行
  * @param font_size 字体大小
 */
-void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize font_size);
+void OLED_DrawString(unsigned char str[], OLED_Point start_point, FontSize font_size);
+
+/**
+ * 
+ * 输出整数
+ * @param number 无符号整数
+ * @param start_point 字符的位置 沿y轴方向从0开始每8像素点作为一行
+ * @param font_size 字体大小
+ * @param base 进制 2 8 10 16
+*/
+void OLED_DrawInteger(uint16_t number, OLED_Point start_point, FontSize font_size, uint8_t base);
 
 #if USE_IMAGE_MANAGE == 1
 // 常用形状

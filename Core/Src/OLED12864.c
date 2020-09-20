@@ -494,7 +494,7 @@ void OLED_DrawCharacter(unsigned char character, OLED_Point start_point, FontSiz
     }
 }
 
-void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize font_size)
+void OLED_DrawString(unsigned char str[], OLED_Point start_point, FontSize font_size)
 {
     uint32_t index = 0, col_index;
     unsigned char charater_index;
@@ -504,23 +504,12 @@ void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize
         while (str[index] != '\0')
         {
             // 将字符与字体库中的字对应
-            charater_index = str[index] - 32;
             if (start_point.x > 126)
             {
                 start_point.x = 0;
                 start_point.y += 8;
             }
-            OLED_Set_Pointer(start_point.x, start_point.y >> 3);
-            for (col_index = 0; col_index < 6; col_index++)
-            {
-#if USE_IMAGE_MANAGE == 1
-                uint8_t page_value = OLED_Get_Page(start_point.x, start_point.y >> 3) | ascii_6x8[charater_index][col_index];
-                OLED_Set_Page(page_value, start_point.x, start_point.y >> 3);
-                OLED_Write_Data(page_value);
-#else
-                OLED_Write_Data(ascii_6x8[charater_index][col_index]);
-#endif
-            }
+            OLED_DrawCharacter(str[index], start_point, font_size);
             start_point.x += 6;
             index++;
         }
@@ -529,39 +518,12 @@ void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize
     case big:
         while (str[index] != '\0')
         {
-            // 将字符与字体库中的字对应
-            charater_index = str[index] - 32;
             if (start_point.x > 120)
             {
                 start_point.x = 0;
-                start_point.y += 8;
+                start_point.y += 16;
             }
-            OLED_Set_Pointer(start_point.x, start_point.y >> 3);
-#if USE_IMAGE_MANAGE == 1
-            for (col_index = 0; col_index < 8; col_index++)
-            {
-                uint8_t page_value = OLED_Get_Page(start_point.x, start_point.y >> 3) | ascii_8X16[charater_index][col_index];
-                OLED_Set_Page(page_value, start_point.x, start_point.y >> 3);
-                OLED_Write_Data(page_value);
-            }
-            OLED_Set_Pointer(start_point.x, start_point.y + 8 >> 3);
-            for (col_index = 8; col_index < 15; col_index++)
-            {
-                uint8_t page_value = OLED_Get_Page(start_point.x, start_point.y >> 3) | ascii_8X16[charater_index][col_index];
-                OLED_Set_Page(page_value, start_point.x, start_point.y >> 3);
-                OLED_Write_Data(page_value);
-            }
-#else
-            for (col_index = 0; col_index < 8; col_index++)
-            {
-                OLED_Write_Data(ascii_8X16[charater_index][col_index]);
-            }
-            OLED_Set_Pointer(start_point.x, start_point.y + 8 >> 3);
-            for (col_index = 8; col_index < 15; col_index++)
-            {
-                OLED_Write_Data(ascii_8X16[charater_index][col_index]);
-            }
-#endif
+            OLED_DrawCharacter(str[index], start_point, font_size);
             start_point.x += 8;
             index++;
         }
@@ -569,6 +531,164 @@ void OLED_DrawString(const unsigned char str[], OLED_Point start_point, FontSize
         break;
     default:
         break;
+    }
+}
+
+void OLED_DrawInteger(uint16_t number, OLED_Point start_point, FontSize font_size, uint8_t base)
+{
+    uint8_t remainder;
+    uint8_t index = 0;
+    unsigned char str[18];
+    for (uint8_t i = 0; i < 18; i++)
+    {
+        str[i] = '\0';
+    }
+
+    if (base == 2)
+    {
+        while (number > 0)
+        {
+            remainder = number % 2;
+            switch (remainder)
+            {
+            case 0:
+                str[index] = '0';
+                break;
+
+            default:
+                str[index] = '1';
+                break;
+            }
+            number -= remainder;
+            number /= 2;
+            index++;
+        }
+        str[index] = 'b';
+        str[index + 1] = '0';
+        index++;
+    }
+    else if (base == 16)
+    {
+        while (number > 0)
+        {
+            remainder = number % 16;
+            switch (remainder)
+            {
+            case 0:
+                str[index] = '0';
+                break;
+            case 1:
+                str[index] = '1';
+                break;
+            case 2:
+                str[index] = '2';
+                break;
+            case 3:
+                str[index] = '3';
+                break;
+            case 4:
+                str[index] = '4';
+                break;
+            case 5:
+                str[index] = '5';
+                break;
+            case 6:
+                str[index] = '6';
+                break;
+            case 7:
+                str[index] = '7';
+                break;
+            case 8:
+                str[index] = '8';
+                break;
+            case 9:
+                str[index] = '9';
+                break;
+            case 10:
+                str[index] = 'A';
+                break;
+            case 11:
+                str[index] = 'B';
+                break;
+            case 12:
+                str[index] = 'C';
+                break;
+            case 13:
+                str[index] = 'D';
+                break;
+            case 14:
+                str[index] = 'E';
+                break;
+            case 15:
+                str[index] = 'F';
+            default:
+                break;
+            }
+            number -= remainder;
+            number /= 16;
+            index++;
+        }
+        str[index] = 'x';
+        str[index + 1] = '0';
+        index++;
+    }
+    else if (base == 10)
+    {
+        while (number > 0)
+        {
+            remainder = number % 10;
+            switch (remainder)
+            {
+            case 0:
+                str[index] = '0';
+                break;
+            case 1:
+                str[index] = '1';
+                break;
+            case 2:
+                str[index] = '2';
+                break;
+            case 3:
+                str[index] = '3';
+                break;
+            case 4:
+                str[index] = '4';
+                break;
+            case 5:
+                str[index] = '5';
+                break;
+            case 6:
+                str[index] = '6';
+                break;
+            case 7:
+                str[index] = '7';
+                break;
+            case 8:
+                str[index] = '8';
+                break;
+            case 9:
+                str[index] = '9';
+                break;
+            default:
+                break;
+            }
+            number -= remainder;
+            number /= 10;
+            index++;
+        }
+        index--;
+    }
+    for (int8_t i = index; i >= 0; i--)
+    {
+        OLED_DrawCharacter(str[i], start_point, font_size);
+        if (font_size == small)
+        {
+            start_point.x += 6;
+        }
+        else
+        {
+            start_point.x += 8;
+        }
     }
 }
 
@@ -584,19 +704,64 @@ void OLED_DrawPoint(OLED_Point point)
 void OLED_DrawLine(OLED_Point point1, OLED_Point point2)
 {
     OLED_Point point;
-    point.x = point1.x;
-    point.y = point.y;
+    uint8_t direction_x, direction_y;
+    uint8_t slope;
+    uint8_t remainder;
     uint16_t __x = point1.x >= point2.x ? (point1.x - point2.x) : (point2.x - point1.x);
     uint16_t __y = point1.y >= point2.y ? (point1.y - point2.y) : (point2.y - point1.y);
-    uint8_t value = 0x01, temp = 0x00;
+    point.x = point1.x;
+    point.y = point.y;
+    direction_x = point1.x >= point2.x ? 0 : 1;
+    direction_y = point1.y >= point2.y ? 0 : 1;
+
     if (__x == 0)
     {
+        for (uint8_t i = 0; i < __y; i++)
+        {
+            OLED_DrawPoint(point);
+            if (direction_y)
+            {
+                point.y++;
+            }
+            else
+            {
+                point.y--;
+            }
+        }
     }
     else if (__y == 0)
     {
+        for (uint8_t i = 0; i < __x; i++)
+        {
+            OLED_DrawPoint(point);
+            if (direction_x)
+            {
+                point.x++;
+            }
+            else
+            {
+                point.x--;
+            }
+        }
     }
     else
     {
+        slope = __y / __x;
+        remainder = __y % __x;
+        for (uint8_t i = 0; i < __x; i++)
+        {
+            for (uint8_t j = 0; j < slope; j++)
+            {
+                OLED_DrawPoint(point);
+                point.y++;
+            }
+            if (i == __y / remainder)
+            {
+                OLED_DrawPoint(point);
+                point.y++;
+            }
+            point.x++;
+        }
     }
 }
 
